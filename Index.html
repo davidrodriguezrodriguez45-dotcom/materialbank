@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaterialBank - Gestión Escolar</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body>
+
+    <!-- LOGIN / REGISTRO -->
+    <div id="auth-container" class="auth-wrapper">
+        <div class="auth-card">
+            <div class="brand-logos-auth">
+                <img src="img/Logo Fe y Alegria.png" alt="Logo Colegio" class="logo-img">
+                <div class="logo-divider"></div>
+                <img src="img/Logo.png" alt="Logo MaterialBank" class="logo-img">
+            </div>
+            
+            <h2>MaterialBank</h2>
+            <p id="auth-subtitle">Control Escolar y Aulas</p>
+            
+            <form id="auth-form" class="styled-form">
+                <div class="input-group" id="name-field" style="display: none;">
+                    <label>Nombre completo</label>
+                    <input type="text" id="reg-name" placeholder="Ej. Carlos Pérez">
+                </div>
+                
+                <div class="input-group" id="role-field" style="display: none;">
+                    <label>Rol institucional</label>
+                    <select id="reg-role">
+                        <option value="Aprendiz">Aprendiz</option>
+                        <option value="Profesor">Profesor</option>
+                        <option value="Coordinación">Coordinación</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>Correo electrónico</label>
+                    <input type="text" id="auth-email" required placeholder="correo@colegio.edu.co">
+                </div>
+                <div class="input-group">
+                    <label>Contraseña</label>
+                    <input type="password" id="auth-password" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" id="auth-btn" class="btn-primary">Entrar al Sistema</button>
+            </form>
+
+            <p class="switch-auth">
+                <span id="switch-text">¿No tienes cuenta?</span> 
+                <a href="#" id="switch-link">Regístrate aquí</a>
+            </p>
+
+            <button type="button" id="reset-db-btn" class="btn-danger" style="margin-top: 15px; width: 100%; font-size: 0.8rem; padding: 0.6rem;">
+                🔄 Limpiar datos guardados
+            </button>
+        </div>
+    </div>
+
+    <!-- APLICACIÓN PRINCIPAL -->
+    <div id="app-container" class="app-layout" style="display: none;">
+        <aside class="sidebar">
+            <div class="brand-header-sidebar">
+                <div class="sidebar-logos">
+                    <img src="img/Logo Fe y Alegria.png" alt="Logo Colegio" class="logo-img-sidebar">
+                    <img src="img/Logo.png" alt="Logo MaterialBank" class="logo-img-sidebar">
+                </div>
+                <h2>MaterialBank</h2>
+            </div>
+
+            <div class="user-info">
+                <p>Bienvenido, <strong id="current-user-name">Usuario</strong></p>
+                <span id="user-role" class="badge">Aprendiz</span>
+            </div>
+
+            <!-- MENÚ DINÁMICO -->
+            <nav id="sidebar-nav"></nav>
+
+            <button id="logout-btn" class="btn-danger">Cerrar Sesión</button>
+        </aside>
+
+        <main class="main-content">
+            
+            <!-- INVENTARIO GENERAL -->
+            <section id="section-inventory" class="tab-section active">
+                <header class="section-header">
+                    <h2>Inventario de Materiales</h2>
+                    <button class="btn-success" id="open-material-modal" style="display:none;">+ Nuevo Material</button>
+                </header>
+                
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Nombre</th>
+                                <th>Stock Total</th>
+                                <th>Disponibles</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- PRÉSTAMOS -->
+            <section id="section-loans" class="tab-section">
+                <header class="section-header">
+                    <h2>Control de Préstamos</h2>
+                    <button class="btn-primary" id="open-loan-modal">+ Registrar Préstamo</button>
+                </header>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Material</th>
+                                <th>Solicitante</th>
+                                <th>Cantidad</th>
+                                <th>Fecha</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loans-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- INVENTARIO DEL SALÓN -->
+            <section id="section-classroom" class="tab-section">
+                <header class="section-header">
+                    <h2>🏫 Inventario y Estado del Salón de Clase</h2>
+                    <button class="btn-success" id="open-classroom-modal">+ Agregar Elemento al Salón</button>
+                </header>
+                <p class="section-desc">Listado de los elementos fijos del aula (puedes cambiar su estado directamente).</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Elemento / Bien</th>
+                                <th>Ubicación / Salón</th>
+                                <th>Cantidad</th>
+                                <th>Estado Actual</th>
+                                <th>Observaciones</th>
+                                <th>Gestión</th>
+                            </tr>
+                        </thead>
+                        <tbody id="classroom-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- REPORTAR DAÑO -->
+            <section id="section-report-damage" class="tab-section">
+                <header class="section-header">
+                    <h2>⚠️ Reportar Daño o Faltante en el Salón</h2>
+                    <button class="btn-warning" id="open-damage-modal">+ Enviar Nuevo Reporte</button>
+                </header>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Salón</th>
+                                <th>Elemento Afectado</th>
+                                <th>Tipo</th>
+                                <th>Descripción</th>
+                                <th>Profesor</th>
+                                <th>Fecha</th>
+                                <th>Estatus Coordinación</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- BANDEJA DE COORDINACIÓN -->
+            <section id="section-coord-dashboard" class="tab-section">
+                <header class="section-header">
+                    <h2>📨 Bandeja de Alertas de Docentes</h2>
+                </header>
+                <p class="section-desc">Novedades reportadas en los salones.</p>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Docente</th>
+                                <th>Salón</th>
+                                <th>Elemento</th>
+                                <th>Descripción</th>
+                                <th>Fecha</th>
+                                <th>Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody id="coord-tbody"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- QR -->
+            <section id="section-qr" class="tab-section">
+                <header class="section-header">
+                    <h2>Generador QR</h2>
+                </header>
+                <div class="qr-card">
+                    <p>Genera un código QR de acceso rápido.</p>
+                    <div class="input-group">
+                        <label>Enlace o texto:</label>
+                        <input type="text" id="qr-input" value="https://materialbank.local">
+                    </div>
+                    <button id="generate-qr-btn" class="btn-primary">Generar QR</button>
+                    
+                    <div class="qr-display">
+                        <canvas id="qr-canvas"></canvas>
+                        <br>
+                        <a id="download-qr" class="btn-secondary" style="display:none;" download="qr.png">Descargar QR</a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODALES MEJORADOS -->
+    <div id="material-modal" class="modal">
+        <div class="modal-content">
+            <h3>Agregar Material al Inventario</h3>
+            <form id="material-form" class="styled-form">
+                <div class="input-group">
+                    <label>Código del material:</label>
+                    <input type="text" id="mat-code" placeholder="Ej. MAT-003" required>
+                </div>
+                <div class="input-group">
+                    <label>Nombre del material:</label>
+                    <input type="text" id="mat-name" placeholder="Ej. Multímetro" required>
+                </div>
+                <div class="input-group">
+                    <label>Stock total:</label>
+                    <input type="number" id="mat-stock" placeholder="Cantidad total" min="1" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-success">Guardar</button>
+                    <button type="button" class="close-modal btn-danger">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="loan-modal" class="modal">
+        <div class="modal-content">
+            <h3>Registrar Préstamo</h3>
+            <form id="loan-form" class="styled-form">
+                <div class="input-group">
+                    <label>Seleccionar Material:</label>
+                    <select id="loan-material-select" required></select>
+                </div>
+                <div class="input-group">
+                    <label>Cantidad:</label>
+                    <input type="number" id="loan-qty" min="1" value="1" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-primary">Registrar</button>
+                    <button type="button" class="close-modal btn-danger">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="classroom-modal" class="modal">
+        <div class="modal-content">
+            <h3>Registrar Elemento en el Salón</h3>
+            <form id="classroom-form" class="styled-form">
+                <div class="input-group">
+                    <label>Nombre del Elemento:</label>
+                    <input type="text" id="cls-name" placeholder="Ej. Televisor, Sillas, Ventana" required>
+                </div>
+                <div class="input-group">
+                    <label>Número de Salón / Aula:</label>
+                    <input type="text" id="cls-location" placeholder="Ej. Aula 101" required>
+                </div>
+                <div class="input-group">
+                    <label>Cantidad:</label>
+                    <input type="number" id="cls-qty" min="1" value="1" required>
+                </div>
+                <div class="input-group">
+                    <label>Estado Actual:</label>
+                    <select id="cls-status">
+                        <option value="Activo / Bueno">Activo / Bueno</option>
+                        <option value="Dañado">Dañado</option>
+                        <option value="Faltante">Faltante</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Observaciones:</label>
+                    <input type="text" id="cls-obs" placeholder="Ej. Funciona bien, falta un vidrio..." required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-success">Guardar Elemento</button>
+                    <button type="button" class="close-modal btn-danger">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="damage-modal" class="modal">
+        <div class="modal-content">
+            <h3>Reportar Daño o Faltante en Salón</h3>
+            <form id="damage-form" class="styled-form">
+                <div class="input-group">
+                    <label>Número de Salón / Aula:</label>
+                    <input type="text" id="dmg-classroom" placeholder="Ej. Aula 204" required>
+                </div>
+                <div class="input-group">
+                    <label>Elemento Afectado:</label>
+                    <select id="dmg-item" required>
+                        <option value="Ventana / Vidrio">Ventana / Vidrio</option>
+                        <option value="Televisor / Pantalla">Televisor / Pantalla</option>
+                        <option value="Mesas / Pupitres">Mesas / Pupitres</option>
+                        <option value="Tablero Acrílico">Tablero Acrílico</option>
+                        <option value="Otro elemento">Otro elemento</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tipo de Novedad:</label>
+                    <select id="dmg-type">
+                        <option value="Dañado">Dañado / Roto</option>
+                        <option value="Faltante">Faltante</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>¿Cómo sucedió? (Detalle lo ocurrido):</label>
+                    <textarea id="dmg-desc" placeholder="Explique brevemente los hechos..." rows="3" required style="width:100%; padding:0.6rem; border-radius:6px; border:1px solid #cbd5e1; font-family:inherit;"></textarea>
+                </div>
+                <div class="modal-buttons">
+                    <button type="submit" class="btn-warning">Enviar a Coordinación</button>
+                    <button type="button" class="close-modal btn-danger">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
